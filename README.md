@@ -1,6 +1,14 @@
 # NaturalCapitalAccounting
 workspace to support development of NCA tables
 
+# Team Members
+Zach Ancona - USGS: Denver
+John Fay - Duke University
+Rajendra Poudel - NOAA
+Charles Rhodes - 
+Brian Voigt - University of Vermont
+
+
 Land Account (Zach will add detail on data)
 Land Use Dataset for 2010 created by David M. Theobald
 NLUD: Vermont, Maryland, Delaware
