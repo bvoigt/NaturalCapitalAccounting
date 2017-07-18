@@ -15,6 +15,8 @@ NLUD: Vermont, Maryland, Delaware
 Land Cover Datasets for 2001, 2006 and 2011 from NLCD
 NLCD (2001,2006,2011): Vermont, Maryland, Delaware
 
+A tool/script to concatenate land cover and land use data. Using, for example, ArcGIS’ combine tool on a land use and land cover dataset would give a raster dataset with both land use and cover attributes. Concatenating the land use and cover fields would then allow the accountant to distinguish between e.g., forests used for industrial forestry, community forestry, and conservation. Using the concatenated land use and cover dataset with tool 1 would allow land use-cover change to be easily tracked in the land and ecosystem accounts.
+
 ## Water Account 
 This project hosts code to assemble water budget data for the US from existing data sources. 
 
