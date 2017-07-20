@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 # Land Accounts
+Analyze Land Cover change for all counties in Maryland from 2001, 2006, and 2011. The National Land Cover Dataset (NLCD) was subset to examine only the values of 41, 42, and 43 representing forest cover.
 
 
 ## R Markdown
