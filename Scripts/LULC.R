@@ -17,6 +17,6 @@ nlcd_stack <- aggregate(nlcd_stack, fact = 10, fun = modal)
 
 counties_md <- filter(counties, STATEFP == '24')
 
-forest <- mask(nlcd_stack, nlcd_stack %in% c(41,42,43), maskvalue = FALSE)
+forest <- (nlcd_stack %in% c(41,42,43))
 
 nlcd_md <- extract(nlcd_stack, counties_md, fun = sum)
