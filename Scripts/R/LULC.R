@@ -14,6 +14,10 @@ raster_2006 <- file.path(DATADIR, 'Land_Use_and_Land_Change/LC_2006_MD_Clip.tif'
 raster_2011 <- file.path(DATADIR, 'Land_Use_and_Land_Change/LC_2011_MD_Clip.tif')
 nlcd_stack <- stack(c(raster_2001,raster_2006,raster_2011))
 nlcd_stack <- aggregate(nlcd_stack, fact = 10, fun = modal)
+plot(nlcd_stack, 1) #would plot the first layer in the stack
+
+# see also for an alternative method for locating files and stacking them
+# nlcd_stacklist.files(path = , pattern = '*.tif', full.names = TRUE)
 
 counties_md <- filter(counties, STATEFP == '24')
 
