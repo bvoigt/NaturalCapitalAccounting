@@ -1,4 +1,5 @@
 #load libraries
+library(tidyr)
 library(dplyr)
 library(ggplot2)
 #library(plotly)
@@ -66,6 +67,7 @@ dfUse = bind_rows(df00, df05, df10)
 #Remove old tables
 rm(df2000, df2005, df2010, df00, df05, df10)
 
+
 ## Read in supply data (later add code to read directly from netCDF files on-line
 dfSupply = read.csv('/nfs/NaturalCapitalAccounting-data/WaterAccounts/SupplyData.csv')
 
@@ -77,17 +79,15 @@ dfAll <- merge(dfUse, dfSupply, by=c('YEAR','FIPS'))
 
 #Set factors
 dfAll$FIPS = as.factor(dfAll$FIPS)
-dfAll$YEAR = as.factor(dfAll$YEAR)
+#dfAll$YEAR = as.factor(dfAll$YEAR)
 dfAll$STATE= as.factor(dfAll$STATE)
 
-#Save the file
-write.csv(dfAll,'/nfs/NaturalCapitalAccounting-data/WaterAccounts/UseAndSupplyData.csv')
+##Plotting...
 
-##Ploting...
 #Generate a scatter plot of [sector] vs population
-theVar = log10(dfAll$Public)
+theVar = log10(dfAll$Total)
 thePlot = ggplot(data=dfAll,
-                 aes(x=log10(Population),y=theVar,color=STATE)) + 
+                 aes(x=log10(Population),y=log10(Total))) + 
   geom_point()
 thePlot
 
@@ -136,4 +136,35 @@ byStates <- dfAll %>%
             "Thermoelectric" = sum(Thermoelectric),
             "Total" = sum(Total),
             "Supply" = sum(Supply))
+
+#Gather the data
+stateGather <-  gather(byStates, key=Sector, value=Withdrawal, Public:Thermoelectric)
+
+dfState = stateGather %>%
+  filter(STATE == 'MD')
+
+ggplot(data = dfState,
+       aes(x=as.numeric(YEAR),y=log10(Withdrawal),color=Sector)) +
+  geom_line() +
+  geom_point() +
+  labs(title="State withdrawal by sector", 
+       hjust=0.5, 
+       x="YEAR", 
+       y="Withdrawal (MGal/year)") +
+  scale_x_continuous(limits = c(2000,2010),
+                     breaks = c(2000,2005,2010))
+         
+
+thePlot = ggplot(data = dfState,
+                 aes(x=as.numeric(YEAR))) + 
+  geom_line(aes(y=Public, color='blue')) +
+  geom_line(aes(y=Domestic, color='red')) +
+  geom_line(aes(y=Industrial, color = 'brown')) + +
+  geom_line(aes(y=Irrigation, color = 'green')) +
+  geom_line(aes(y=Aquaculture)) +
+  geom_line(aes(y=Livestock)) +
+  geom_line(aes(y=Mining)) 
+
+thePlot
+
 
