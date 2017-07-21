@@ -1,0 +1,71 @@
+---
+title: "WaterUseBySector"
+author: "Team NatCapAccounting"
+date: "7/21/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Water Use by Sector
+This project pulls data from the USGS water use data server for the years 2000, 2005, and 2010, then combines these data into a single table from which a user can view the water use by sector for a selected state. 
+
+### Load libraries
+```{r echo=FALSE}
+#load libraries
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+### Read in the USGS data
+```{r}
+#read in usgs use data
+df2000 <- read.delim('https://water.usgs.gov/watuse/data/2000/usco2000.txt')
+df2005 <- read.delim('https://water.usgs.gov/watuse/data/2005/usco2005.txt')
+df2010 <- read.delim('https://water.usgs.gov/watuse/data/2010/usco2010.txt')
+```
+
+### Rename columns to more readable names 
+```{r}
+#Rename rename freshwater total columns
+df00 <- df2000 %>%
+  rename("Population" = "TP.TotPop") %>%
+  rename("Public" = "PS.WFrTo") %>%
+  rename("Domestic" = "DO.WFrTo") %>%
+  rename("Industrial" = "IN.WFrTo") %>%
+  rename("Irrigation" = "IT.WFrTo") %>%
+  rename("Aquaculture" = "LA.WFrTo") %>%
+  rename("Livestock" = "LS.WFrTo") %>%
+  rename("Mining" = "MI.WFrTo") %>%
+  rename("Thermoelectric" = "PT.WFrTo") %>%
+  rename("Total" = "TO.WFrTo") %>%
+#Remove all other supply columns
+  select(-contains("."))
+#Add year column equal to 2000
+df00['YEAR'] = 2000
+```
+
+
+### Append all yearly data into a single table
+```{r}
+
+```
+
+### Summarize data by state
+```{r}
+
+```
+
+### Gather data into a tidier format
+```{r}
+
+```
+
+### Plot data for a selected state
+```{r}
+
+```
+

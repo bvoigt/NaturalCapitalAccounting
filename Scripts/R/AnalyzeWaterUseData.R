@@ -143,28 +143,15 @@ stateGather <-  gather(byStates, key=Sector, value=Withdrawal, Public:Thermoelec
 dfState = stateGather %>%
   filter(STATE == 'MD')
 
-ggplot(data = dfState,
+thePlot <- ggplot(data = dfState,
        aes(x=as.numeric(YEAR),y=log10(Withdrawal),color=Sector)) +
   geom_line() +
   geom_point() +
   labs(title="State withdrawal by sector", 
-       hjust=0.5, 
        x="YEAR", 
        y="Withdrawal (MGal/year)") +
   scale_x_continuous(limits = c(2000,2010),
                      breaks = c(2000,2005,2010))
          
-
-thePlot = ggplot(data = dfState,
-                 aes(x=as.numeric(YEAR))) + 
-  geom_line(aes(y=Public, color='blue')) +
-  geom_line(aes(y=Domestic, color='red')) +
-  geom_line(aes(y=Industrial, color = 'brown')) + +
-  geom_line(aes(y=Irrigation, color = 'green')) +
-  geom_line(aes(y=Aquaculture)) +
-  geom_line(aes(y=Livestock)) +
-  geom_line(aes(y=Mining)) 
-
+thePlot <- thePlot + theme(plot.title = element_text(hjust = 0.5))
 thePlot
-
-
