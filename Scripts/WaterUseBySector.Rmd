@@ -2,7 +2,9 @@
 title: "WaterUseBySector"
 author: "Team NatCapAccounting"
 date: "7/21/2017"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -23,15 +25,17 @@ library(ggplot2)
 ### Read in the USGS data
 ```{r}
 #read in usgs use data
-df2000 <- read.delim('https://water.usgs.gov/watuse/data/2000/usco2000.txt')
-df2005 <- read.delim('https://water.usgs.gov/watuse/data/2005/usco2005.txt')
-df2010 <- read.delim('https://water.usgs.gov/watuse/data/2010/usco2010.txt')
+df2000 <- read.delim('https://water.usgs.gov/watuse/data/2000/usco2000.txt',na='')
+df2005 <- read.delim('https://water.usgs.gov/watuse/data/2005/usco2005.txt',na='')
+df2010 <- read.delim('https://water.usgs.gov/watuse/data/2010/usco2010.txt',na='')
+head(df2010)
 ```
 
 ### Rename columns to more readable names 
+Year 2000...
 ```{r}
 #Rename rename freshwater total columns
-df00 <- df2000 %>%
+df2000 <- df2000 %>%
   rename("Population" = "TP.TotPop") %>%
   rename("Public" = "PS.WFrTo") %>%
   rename("Domestic" = "DO.WFrTo") %>%
@@ -45,27 +49,112 @@ df00 <- df2000 %>%
 #Remove all other supply columns
   select(-contains("."))
 #Add year column equal to 2000
-df00['YEAR'] = 2000
+df2000['YEAR'] = 2000
 ```
 
-
-### Append all yearly data into a single table
+Year 2005...
 ```{r}
-
+#Rename rename freshwater total columns
+df2005 <- df2005 %>%
+  rename("Population" = "TP.TotPop") %>%
+  rename("Public" = "PS.WFrTo") %>%
+  rename("Domestic" = "DO.WFrTo") %>%
+  rename("Industrial" = "IN.WFrTo") %>%
+  rename("Irrigation" = "IR.WFrTo") %>%
+  rename("Aquaculture" = "LA.WFrTo") %>%
+  rename("Livestock" = "LS.WFrTo") %>%
+  rename("Mining" = "MI.WFrTo") %>%
+  rename("Thermoelectric" = "PT.WFrTo") %>%
+  rename("Total" = "TO.WFrTo") %>%
+  #Remove all other supply columns
+  select(-contains(".")) %>%
+  select(-X)
+df2005['YEAR'] = 2005
 ```
+
+Year 2010...
+```{r}
+#Rename rename freshwater total columns
+df2010 <- df2010 %>%
+  rename("Population" = "TP.TotPop") %>%
+  rename("Public" = "PS.WFrTo") %>%
+  rename("Domestic" = "DO.WFrTo") %>%
+  rename("Industrial" = "IN.WFrTo") %>%
+  rename("Irrigation" = "IR.WFrTo") %>%
+  rename("Aquaculture" = "AQ.WFrTo") %>%
+  rename("Livestock" = "LI.WFrTo") %>%
+  rename("Mining" = "MI.WFrTo") %>%
+  rename("Thermoelectric" = "PT.WFrTo") %>%
+  rename("Total" = "TO.WFrTo") %>%
+  #Remove all other supply columns
+  select(-contains(".")) %>%
+  select(-COUNTY) %>%
+  select(-X)
+head(df2010)
+```
+
+
+### Append all yearly data into a single table & clean up
+```{r}
+#Combine all tables
+dfUse = bind_rows(df2000, df2005, df2010)
+
+#Remove old tables
+rm(df2000, df2005, df2010)
+
+head(dfUse)
+```
+
 
 ### Summarize data by state
 ```{r}
-
+#Generate the table of year x summed usage & supply
+byStates <- dfUse %>% 
+  #Group by time and state
+  group_by(YEAR,STATE) %>%
+  #Summarize all records
+  summarize("Population" = sum(Population),
+            "Public" = sum(Public), 
+            "Domestic" = sum(Domestic),
+            "Industrial" = sum(Industrial),
+            "Irrigation" = sum(Irrigation),
+            "Aquaculture" = sum(Aquaculture),
+            "Livestock" = sum(Livestock),
+            "Mining" = sum(Mining),
+            "Thermoelectric" = sum(Thermoelectric),
+            "Total" = sum(Total))
+head(byStates)
 ```
 
 ### Gather data into a tidier format
 ```{r}
+#Gather the data
+stateGather <-  gather(byStates, key=Sector, value=Withdrawal, Public:Thermoelectric)
+head(stateGather)
+```
 
+### Filter for a specific state
+```{r}
+dfState = stateGather %>%
+  filter(STATE == 'MD')
+  
+head(dfState)
 ```
 
 ### Plot data for a selected state
 ```{r}
 
+thePlot <- ggplot(data = dfState,
+       aes(x=as.numeric(YEAR),y=log10(Withdrawal),color=Sector)) +
+  geom_line() +
+  geom_point() +
+  labs(title="State withdrawal by sector", 
+       x="YEAR", 
+       y="Withdrawal (MGal/year)") +
+  scale_x_continuous(limits = c(2000,2010),
+                     breaks = c(2000,2005,2010))
+         
+thePlot <- thePlot + theme(plot.title = element_text(hjust = 0.5))
+thePlot
 ```
 
