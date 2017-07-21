@@ -1,18 +1,27 @@
 #load libraries
 library(dplyr)
 library(ggplot2)
-#install.packages('plotly')
 #library(plotly)
 
 #read in usgs use data
-dfUsage = read.csv('/nfs/NaturalCapitalAccounting-data/WaterAccounts/UseAndSupply.csv')
-names(dfUsage)
+dfWater = read.csv('/nfs/NaturalCapitalAccounting-data/WaterAccounts/CountyUseAndSupply.csv')
+
+dfWater$YEAR = as.factor(dfWater$YEAR)
+dfWater$FIPS = as.factor(dfWater$FIPS)
+#Plot usage by year (Just MD)
+
+ggplot(data = dfWater,
+       aes(x=state,y=Supply)) +
+  geom_point(aes(shape=YEAR),
+             size = 3,
+             stat = 'summary',
+             fun.y = 'mean')
 
 
 #box plot of county usage by category - all us
 #Select by year and compute mean of each category
-df2000 = dfUsage%>% 
-  group_by(YEAR) %>%
+dfCountyByYear = dfWater%>% 
+  group_by(YEAR,FIPS) %>%
   summarize('public' = sum(Public),
             'domestic' = sum(Domestic),
             'industry' = sum(Industry))
