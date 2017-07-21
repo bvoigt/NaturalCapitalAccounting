@@ -84,12 +84,18 @@ dfAll$STATE= as.factor(dfAll$STATE)
 write.csv(dfAll,'/nfs/NaturalCapitalAccounting-data/WaterAccounts/UseAndSupplyData.csv')
 
 ##Ploting...
+#Generate a scatter plot of [sector] vs population
+theVar = log10(dfAll$Public)
+thePlot = ggplot(data=dfAll,
+                 aes(x=log10(Population),y=theVar,color=STATE)) + 
+  geom_point()
+thePlot
+
 #Generate a box plot of a variable over the three years
 theVar = dfAll$Supply
 allStatesPlot <- ggplot(data = dfAll,
                         aes(x=YEAR,y=log10(theVar))) + 
   geom_boxplot()
-
 allStatesPlot
 
 
@@ -113,3 +119,21 @@ allStates <- dfAll %>%
             "Supply" = sum(Supply))
 
 ##Display average usage over time - by categories, all states combined
+
+#Generate the table of year x summed usage & supply
+byStates <- dfAll %>% 
+  #Group by time and state
+  group_by(YEAR,STATE) %>%
+  #Summarize all records
+  summarize("Population" = sum(Population),
+            "Public" = sum(Public), 
+            "Domestic" = sum(Domestic),
+            "Industrial" = sum(Industrial),
+            "Irrigation" = sum(Irrigation),
+            "Aquaculture" = sum(Aquaculture),
+            "Livestock" = sum(Livestock),
+            "Mining" = sum(Mining),
+            "Thermoelectric" = sum(Thermoelectric),
+            "Total" = sum(Total),
+            "Supply" = sum(Supply))
+
