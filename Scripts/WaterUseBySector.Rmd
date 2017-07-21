@@ -1,17 +1,41 @@
+---
+title: "WaterUseBySector"
+author: "Team NatCapAccounting"
+date: "7/21/2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Water Use by Sector
+This project pulls data from the USGS water use data server for the years 2000, 2005, and 2010, then combines these data into a single table from which a user can view the water use by sector for a selected state. 
+
+### Load libraries
+```{r echo=FALSE}
 #load libraries
 library(tidyr)
 library(dplyr)
 library(ggplot2)
-#library(plotly)
+```
 
+### Read in the USGS data
+```{r}
 #read in usgs use data
 df2000 <- read.delim('https://water.usgs.gov/watuse/data/2000/usco2000.txt',na='')
 df2005 <- read.delim('https://water.usgs.gov/watuse/data/2005/usco2005.txt',na='')
-df2010 <- read.delim('https://water.usgs.gov/watuse/data/2010/usco2010.txt')
+df2010 <- read.delim('https://water.usgs.gov/watuse/data/2010/usco2010.txt',na='')
+head(df2010)
+```
 
-
+### Rename columns to more readable names 
+Year 2000...
+```{r}
 #Rename rename freshwater total columns
-df00 <- df2000 %>%
+df2000 <- df2000 %>%
   rename("Population" = "TP.TotPop") %>%
   rename("Public" = "PS.WFrTo") %>%
   rename("Domestic" = "DO.WFrTo") %>%
@@ -25,10 +49,13 @@ df00 <- df2000 %>%
 #Remove all other supply columns
   select(-contains("."))
 #Add year column equal to 2000
-df00['YEAR'] = 2000
+df2000['YEAR'] = 2000
+```
 
+Year 2005...
+```{r}
 #Rename rename freshwater total columns
-df05 <- df2005 %>%
+df2005 <- df2005 %>%
   rename("Population" = "TP.TotPop") %>%
   rename("Public" = "PS.WFrTo") %>%
   rename("Domestic" = "DO.WFrTo") %>%
@@ -42,10 +69,13 @@ df05 <- df2005 %>%
   #Remove all other supply columns
   select(-contains(".")) %>%
   select(-X)
-df05['YEAR'] = 2005
+df2005['YEAR'] = 2005
+```
 
+Year 2010...
+```{r}
 #Rename rename freshwater total columns
-df10 <- df2010 %>%
+df2010 <- df2010 %>%
   rename("Population" = "TP.TotPop") %>%
   rename("Public" = "PS.WFrTo") %>%
   rename("Domestic" = "DO.WFrTo") %>%
@@ -60,68 +90,26 @@ df10 <- df2010 %>%
   select(-contains(".")) %>%
   select(-COUNTY) %>%
   select(-X)
+head(df2010)
+```
 
+
+### Append all yearly data into a single table & clean up
+```{r}
 #Combine all tables
-dfUse = bind_rows(df00, df05, df10)
+dfUse = bind_rows(df2000, df2005, df2010)
 
 #Remove old tables
-rm(df2000, df2005, df2010, df00, df05, df10)
+rm(df2000, df2005, df2010)
+
+head(dfUse)
+```
 
 
-## Read in supply data (later add code to read directly from netCDF files on-line
-dfSupply = read.csv('/nfs/NaturalCapitalAccounting-data/WaterAccounts/SupplyData.csv')
-
-## Compute total supply - as Precip minus Evapotranspiration
-dfSupply$Supply = dfSupply$pr - dfSupply$et
-
-#Join on YEAR and FIPS
-dfAll <- merge(dfUse, dfSupply, by=c('YEAR','FIPS'))
-
-#Set factors
-dfAll$FIPS = as.factor(dfAll$FIPS)
-#dfAll$YEAR = as.factor(dfAll$YEAR)
-dfAll$STATE= as.factor(dfAll$STATE)
-
-##Plotting...
-
-#Generate a scatter plot of [sector] vs population
-theVar = log10(dfAll$Total)
-thePlot = ggplot(data=dfAll,
-                 aes(x=log10(Population),y=log10(Total))) + 
-  geom_point()
-thePlot
-
-#Generate a box plot of a variable over the three years
-theVar = dfAll$Supply
-allStatesPlot <- ggplot(data = dfAll,
-                        aes(x=YEAR,y=log10(theVar))) + 
-  geom_boxplot()
-allStatesPlot
-
-
-##Display average usage over time - all categories and all states combined
-
+### Summarize data by state
+```{r}
 #Generate the table of year x summed usage & supply
-allStates <- dfAll %>% 
-  #Group by time
-  group_by(YEAR) %>%
-  #Summarize all records
-  summarize("Population" = sum(Population),
-            "Public" = sum(Public), 
-            "Domestic" = sum(Domestic),
-            "Industrial" = sum(Industrial),
-            "Irrigation" = sum(Irrigation),
-            "Aquaculture" = sum(Aquaculture),
-            "Livestock" = sum(Livestock),
-            "Mining" = sum(Mining),
-            "Thermoelectric" = sum(Thermoelectric),
-            "Total" = sum(Total),
-            "Supply" = sum(Supply))
-
-##Display average usage over time - by categories, all states combined
-
-#Generate the table of year x summed usage & supply
-byStates <- dfAll %>% 
+byStates <- dfUse %>% 
   #Group by time and state
   group_by(YEAR,STATE) %>%
   #Summarize all records
@@ -134,14 +122,27 @@ byStates <- dfAll %>%
             "Livestock" = sum(Livestock),
             "Mining" = sum(Mining),
             "Thermoelectric" = sum(Thermoelectric),
-            "Total" = sum(Total),
-            "Supply" = sum(Supply))
+            "Total" = sum(Total))
+head(byStates)
+```
 
+### Gather data into a tidier format
+```{r}
 #Gather the data
 stateGather <-  gather(byStates, key=Sector, value=Withdrawal, Public:Thermoelectric)
+head(stateGather)
+```
 
+### Filter for a specific state
+```{r}
 dfState = stateGather %>%
   filter(STATE == 'MD')
+  
+head(dfState)
+```
+
+### Plot data for a selected state
+```{r}
 
 thePlot <- ggplot(data = dfState,
        aes(x=as.numeric(YEAR),y=log10(Withdrawal),color=Sector)) +
@@ -155,3 +156,5 @@ thePlot <- ggplot(data = dfState,
          
 thePlot <- thePlot + theme(plot.title = element_text(hjust = 0.5))
 thePlot
+```
+
