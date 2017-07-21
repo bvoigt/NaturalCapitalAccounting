@@ -24,3 +24,6 @@ counties_md <- filter(counties, STATEFP == '24')
 forest <- (nlcd_stack %in% c(41,42,43))
 
 nlcd_md <- extract(nlcd_stack, counties_md, fun = sum)
+
+#animation
+testAnimate <- animate(nlcd_stack, pause = 1, n = 1)
