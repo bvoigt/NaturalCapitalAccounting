@@ -5,7 +5,7 @@ workspace to support development of NCA tables
 Zach Ancona - USGS: Denver
 John Fay - Duke University
 Rajendra Poudel - NOAA
-Charles Rhodes - 
+Charles Rhodes - ORISE post-doc, at USEPA - OW/ORD
 Brian Voigt - University of Vermont
 
 
