@@ -1,7 +1,6 @@
 #load libraries
 library(dplyr)
 library(ggplot2)
-#install.packages('plotly')
 #library(plotly)
 
 #read in usgs use data
@@ -62,4 +61,55 @@ df10 <- df2010 %>%
   select(-X)
 
 #Combine all tables
-dfAll = bind_rows(df00, df05, df10)
+dfUse = bind_rows(df00, df05, df10)
+
+#Remove old tables
+rm(df2000, df2005, df2010, df00, df05, df10)
+
+## Read in supply data (later add code to read directly from netCDF files on-line
+dfSupply = read.csv('/nfs/NaturalCapitalAccounting-data/WaterAccounts/SupplyData.csv')
+
+## Compute total supply - as Precip minus Evapotranspiration
+dfSupply$Supply = dfSupply$pr - dfSupply$et
+
+#Join on YEAR and FIPS
+dfAll <- merge(dfUse, dfSupply, by=c('YEAR','FIPS'))
+
+#Set factors
+dfAll$FIPS = as.factor(dfAll$FIPS)
+dfAll$YEAR = as.factor(dfAll$YEAR)
+dfAll$STATE= as.factor(dfAll$STATE)
+
+#Save the file
+write.csv(dfAll,'/nfs/NaturalCapitalAccounting-data/WaterAccounts/UseAndSupplyData.csv')
+
+##Ploting...
+#Generate a box plot of a variable over the three years
+theVar = dfAll$Supply
+allStatesPlot <- ggplot(data = dfAll,
+                        aes(x=YEAR,y=log10(theVar))) + 
+  geom_boxplot()
+
+allStatesPlot
+
+
+##Display average usage over time - all categories and all states combined
+
+#Generate the table of year x summed usage & supply
+allStates <- dfAll %>% 
+  #Group by time
+  group_by(YEAR) %>%
+  #Summarize all records
+  summarize("Population" = sum(Population),
+            "Public" = sum(Public), 
+            "Domestic" = sum(Domestic),
+            "Industrial" = sum(Industrial),
+            "Irrigation" = sum(Irrigation),
+            "Aquaculture" = sum(Aquaculture),
+            "Livestock" = sum(Livestock),
+            "Mining" = sum(Mining),
+            "Thermoelectric" = sum(Thermoelectric),
+            "Total" = sum(Total),
+            "Supply" = sum(Supply))
+
+##Display average usage over time - by categories, all states combined
